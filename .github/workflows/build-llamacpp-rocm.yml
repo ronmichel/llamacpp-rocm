@@ -35,8 +35,8 @@ on:
     - cron: '0 13 * * *'
 
 env:
-  OPERATING_SYSTEMS: ${{ github.event.inputs.operating_systems || 'windows,ubuntu' }}
-  GFX_TARGETS: ${{ github.event.inputs.gfx_target || 'gfx1151,gfx120X,gfx110X' }}
+  OPERATING_SYSTEMS: ${{ github.event.inputs.operating_systems || 'windows' }}
+  GFX_TARGETS: ${{ github.event.inputs.gfx_target || 'gfx1150' }}
   ROCM_VERSION: ${{ github.event.inputs.rocm_version || 'latest' }}
   LLAMACPP_VERSION: ${{ github.event.inputs.llamacpp_version || 'latest' }}
 
