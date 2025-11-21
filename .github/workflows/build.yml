@@ -35,7 +35,7 @@ env:
 jobs:
 
   windows-latest-cmake-hip:
-    runs-on: windows-2022
+    runs-on: windows-latest
 
     env:
       # The ROCm version must correspond to the version used in the HIP SDK.
