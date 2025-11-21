@@ -96,11 +96,12 @@ jobs:
           key: rocm-${{ env.HIPSDK_INSTALLER_VERSION }}-${{ runner.os }}
 
       - name: Setup ROCm
-        if: steps.cache-rocm.outputs.cache-hit != 'true'
-        uses: ./.github/actions/windows-setup-rocm
+        if: steps.cache-rocm.outputs.cache-hit != 'true'    
+        uses: ./.github/actions/install-exe
         with:
-          version: ${{ env.HIPSDK_INSTALLER_VERSION }}
-
+          url: https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-WinSvr2022-For-HIP.exe
+          args: -install
+        
       - name: Verify ROCm
         id: verify
         run: |
