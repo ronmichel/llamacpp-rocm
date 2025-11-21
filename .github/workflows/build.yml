@@ -1,4 +1,4 @@
-name: Build Llama.cpp + ROCm
+name: Build with ROCm release
 on:
   workflow_dispatch:
     inputs:
