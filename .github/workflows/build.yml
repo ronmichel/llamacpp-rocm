@@ -263,7 +263,7 @@ jobs:
         echo Mapped target: %mapped_target%
 
         REM Set up environment variables and PATH
-        set HIP_PATH=$(Resolve-Path 'C:\Program Files\AMD\ROCm\*\bin\clang.exe' | split-path | split-path)
+        set HIP_PATH="C:\Program Files\AMD\ROCm\6.4"
         set HIP_PLATFORM=amd
         set PATH=%HIP_PATH%\lib\llvm\bin;%HIP_PATH%\bin;%PATH%
 
