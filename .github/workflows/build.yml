@@ -1,0 +1,139 @@
+name: buildhip
+
+on:
+  workflow_dispatch: # allows manual triggering
+    inputs:
+      operating_systems:
+        description: 'Operating systems to build for (comma-separated: windows,ubuntu)'
+        required: false
+        default: 'windows'
+      gfx_target:
+        description: 'AMD GPU targets (comma-separated)'
+        required: false
+        default: 'gfx1150'
+      rocm_version:
+        description: 'ROCm version to use '
+        required: false
+        default: '6.4.2'
+      llamacpp_version:
+        description: 'Llama.cpp version (e.g., tag, branch, or commit hash) or "latest" for master branch'
+        required: false
+        default: 'latest'
+      create_release:
+        description: 'Create a GitHub release after successful build'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  GGML_NLOOP: 3
+  GGML_N_THREADS: 1
+  LLAMA_LOG_COLORS: 1
+  LLAMA_LOG_PREFIX: 1
+  LLAMA_LOG_TIMESTAMPS: 1
+
+jobs:
+
+  windows-latest-cmake-hip:
+    runs-on: windows-2022
+
+    env:
+      # The ROCm version must correspond to the version used in the HIP SDK.
+      ROCM_VERSION: ${{ github.event.inputs.rocm_version || '6.4.2' }}
+      # Make sure this is in sync with build-cache.yml
+      HIPSDK_INSTALLER_VERSION: "25.Q3"
+      OPERATING_SYSTEMS: ${{ github.event.inputs.operating_systems || 'windows' }}
+      GFX_TARGETS: ${{ github.event.inputs.gfx_target || 'gfx1150' }}
+
+      LLAMACPP_VERSION: ${{ github.event.inputs.llamacpp_version || 'latest' }}
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        
+      - name: Clean up existing directories (safety precaution)
+        run: |
+          # Remove existing llama.cpp directory if it exists
+          if (Test-Path "llama.cpp") {
+            Write-Host "Removing existing llama.cpp directory..."
+            Remove-Item -Recurse -Force "llama.cpp"
+          }
+          
+      - name: Clone llama.cpp
+        run: |
+          $llamacppVersion = "${{ env.LLAMACPP_VERSION }}"
+          if ($llamacppVersion -eq "latest") {
+            Write-Host "Cloning master branch (latest) with shallow clone"
+            git clone --depth 1 --single-branch --branch master https://github.com/ggerganov/llama.cpp.git
+          } else {
+            Write-Host "Cloning llama.cpp version: $llamacppVersion with shallow clone"
+            git clone --depth 1 --single-branch --branch $llamacppVersion https://github.com/ggerganov/llama.cpp.git
+          }
+          cd llama.cpp
+          
+          # Get commit hash (5 digits) and store it as environment variable
+          $commitHash = git rev-parse --short=5 HEAD
+          echo "LLAMACPP_COMMIT_HASH=$commitHash" >> $env:GITHUB_ENV
+          Write-Host "llama.cpp commit hash (5 digits): $commitHash"
+          
+          # Show current commit info
+          Write-Host "Current llama.cpp commit:"
+          git log --oneline -1
+
+      - name: Grab rocWMMA package
+        id: grab_rocwmma
+        run: |
+          curl -o rocwmma.deb "https://repo.radeon.com/rocm/apt/${{ env.ROCM_VERSION }}/pool/main/r/rocwmma-dev/rocwmma-dev_1.7.0.60402-120~24.04_amd64.deb"
+          7z x rocwmma.deb
+          7z x data.tar
+
+      - name: Use ROCm Installation Cache
+        uses: actions/cache@v4
+        id: cache-rocm
+        with:
+          path: C:\Program Files\AMD\ROCm
+          key: rocm-${{ env.HIPSDK_INSTALLER_VERSION }}-${{ runner.os }}
+
+      - name: Setup ROCm
+        if: steps.cache-rocm.outputs.cache-hit != 'true'
+        uses: ./.github/actions/windows-setup-rocm
+        with:
+          version: ${{ env.HIPSDK_INSTALLER_VERSION }}
+
+      - name: Verify ROCm
+        id: verify
+        run: |
+          # Find and test ROCm installation
+          $clangPath = Get-ChildItem 'C:\Program Files\AMD\ROCm\*\bin\clang.exe' | Select-Object -First 1
+          if (-not $clangPath) {
+            Write-Error "ROCm installation not found"
+            exit 1
+          }
+          & $clangPath.FullName --version
+
+      - name: Install ccache
+        uses: ggml-org/ccache-action@v1.2.16
+        with:
+          key: ${{ github.job }}
+          evict-old-files: 1d
+
+      - name: Build
+        id: cmake_build
+        run: |
+          cd llama.cpp
+          $env:HIP_PATH=$(Resolve-Path 'C:\Program Files\AMD\ROCm\*\bin\clang.exe' | split-path | split-path)
+          $env:CMAKE_PREFIX_PATH="${env:HIP_PATH}"
+          cmake -G "Unix Makefiles" -B build -S . `
+            -DCMAKE_C_COMPILER="${env:HIP_PATH}\bin\clang.exe" `
+            -DCMAKE_CXX_COMPILER="${env:HIP_PATH}\bin\clang++.exe" `
+            -DCMAKE_CXX_FLAGS="-I$($PWD.Path.Replace('\', '/'))/opt/rocm-${{ env.ROCM_VERSION }}/include/" `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DLLAMA_CURL=OFF `
+            -DLLAMA_BUILD_BORINGSSL=ON `
+            -DROCM_DIR="${env:HIP_PATH}" `
+            -DGGML_HIP=ON `
+            -DGGML_HIP_ROCWMMA_FATTN=ON `
+            -DGGML_RPC=ON
+          cmake --build build -j ${env:NUMBER_OF_PROCESSORS}
+
