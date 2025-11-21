@@ -92,6 +92,8 @@ jobs:
     runs-on: windows-latest
     needs: prepare-matrix
     if: needs.prepare-matrix.outputs.should_build_windows == 'true'
+    env:
+      HIPSDK_INSTALLER_VERSION: "25.Q3"
     strategy:
       matrix: ${{fromJson(needs.prepare-matrix.outputs.windows_matrix)}}
       fail-fast: false
@@ -168,79 +170,26 @@ jobs:
 
         Write-Host "Manual installation of build dependencies completed"
             
-    - name: Download ROCm nightly tarball
+    - name: Install ROCm
+      if: steps.cache-rocm.outputs.cache-hit != 'true'
+      id: depends
       run: |
-        # Determine ROCm version to use
-        $rocmVersion = "${{ env.ROCM_VERSION }}"
-        $currentTarget = "${{ matrix.gfx_target }}"
-        
-        # Add appropriate suffixes for different GPU targets
-        $s3Target = $currentTarget
-        if ($currentTarget -eq "gfx110X") {
-          $s3Target = "$currentTarget-dgpu"
-          Write-Host "Using S3 target with -dgpu suffix: $s3Target"
-        } elseif ($currentTarget -eq "gfx120X") {
-          $s3Target = "$currentTarget-all"
-          Write-Host "Using S3 target with -all suffix: $s3Target"
-        }
-        
-        if ($rocmVersion -eq "latest") {
-          Write-Host "Auto-detecting latest ROCm version for target: $currentTarget"
-          $s3Response = (Invoke-WebRequest "https://therock-nightly-tarball.s3.amazonaws.com/?prefix=therock-dist-windows-$s3Target-7").Content
-          $files = $s3Response -split '<Key>' | Where-Object {$_ -match '</Key>'} | ForEach-Object { ($_ -split '</Key>')[0] }
-          
-          # Extract versions and sort them properly using semantic versioning
-          $versionFiles = @()
-          foreach ($file in $files) {
-            if ($file -match "therock-dist-windows-$s3Target-.*?(\d+\.\d+\.\d+(?:a|rc)\d+)\.tar\.gz") {
-              $version = $matches[1]
-              $versionFiles += [PSCustomObject]@{
-                File = $file
-                Version = $version
-                Major = [int]($version -split '\.')[0]
-                Minor = [int]($version -split '\.')[1]
-                Patch = [int](($version -split '\.')[2] -replace '(?:a|rc).*', '')
-                RC = [int]($version -replace '.*(?:a|rc)', '')
-                IsAlpha = $version -match 'a'
-              }
-            }
-          }
-          
-          # Sort by semantic version (major.minor.patch.rc, with alpha versions being newer than rc)
-          $latestFile = ($versionFiles | Sort-Object Major, Minor, Patch, @{Expression={if($_.IsAlpha){1}else{0}}}, RC | Select-Object -Last 1).File
-          
-          Write-Host "Found latest file: $latestFile"
-          
-          # Extract version from the filename for environment variable
-          if ($latestFile -match "therock-dist-windows-$s3Target-.*?(\d+\.\d+\.\d+(?:a|rc)\d+)\.tar\.gz") {
-            $rocmVersion = $matches[1]
-            Write-Host "Detected latest ROCm version: $rocmVersion"
-          } else {
-            Write-Error "Failed to extract ROCm version from latest file: $latestFile"
-            Write-Error "Expected pattern: therock-dist-windows-$s3Target-*<version>.tar.gz"
+        $ErrorActionPreference = "Stop"
+        write-host "Downloading AMD HIP SDK Installer"
+        Invoke-WebRequest -Uri "https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-WinSvr2022-For-HIP.exe" -OutFile "${env:RUNNER_TEMP}\rocm-install.exe"
+        write-host "Installing AMD HIP SDK"
+        $proc = Start-Process "${env:RUNNER_TEMP}\rocm-install.exe" -ArgumentList '-install' -NoNewWindow -PassThru
+        $completed = $proc.WaitForExit(600000)
+        if (-not $completed) {
+            Write-Error "ROCm installation timed out after 10 minutes. Killing the process"
+            $proc.Kill()
             exit 1
-          }
-          
-          # Use the exact filename from S3 instead of reconstructing
-          $rocmUrl = "https://therock-nightly-tarball.s3.amazonaws.com/$latestFile"
-        } else {
-          # For specific versions, construct the URL as before
-          $rocmUrl = "https://therock-nightly-tarball.s3.amazonaws.com/therock-dist-windows-$s3Target-$rocmVersion.tar.gz"
         }
-        
-        # Store the version for use in other steps
-        echo "DETECTED_ROCM_VERSION=$rocmVersion" >> $env:GITHUB_ENV
-        
-        Write-Host "Downloading ROCm from: $rocmUrl"
-        Invoke-WebRequest -Uri $rocmUrl -OutFile "rocm.tar.gz"
-        
-    - name: Extract ROCm to C:\opt\rocm
-      run: |
-        # Create directory if it doesn't exist
-        New-Item -ItemType Directory -Force -Path "C:\opt\rocm"
-        
-        # Extract the tarball
-        tar -xzf rocm.tar.gz -C C:\opt\rocm --strip-components=1
+        if ($proc.ExitCode -ne 0) {
+            Write-Error "ROCm installation failed with exit code $($proc.ExitCode)"
+            exit 1
+        }
+        write-host "Completed AMD HIP SDK installation"
         
     #- name: Install rocWMMA headers (develop)
     #  run: |
@@ -314,7 +263,7 @@ jobs:
         echo Mapped target: %mapped_target%
 
         REM Set up environment variables and PATH
-        set HIP_PATH=C:\opt\rocm
+        set HIP_PATH=$(Resolve-Path 'C:\Program Files\AMD\ROCm\*\bin\clang.exe' | split-path | split-path)
         set HIP_PLATFORM=amd
         set PATH=%HIP_PATH%\lib\llvm\bin;%HIP_PATH%\bin;%PATH%
 
