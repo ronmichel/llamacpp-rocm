@@ -270,8 +270,8 @@ jobs:
 
         REM Configure the project
         cmake .. -G Ninja ^
-          -DCMAKE_C_COMPILER="C:\opt\rocm\lib\llvm\bin\clang.exe" ^
-          -DCMAKE_CXX_COMPILER="C:\opt\rocm\lib\llvm\bin\clang++.exe" ^
+          -DCMAKE_C_COMPILER="%HIP_PATH%\lib\llvm\bin\clang.exe" ^
+          -DCMAKE_CXX_COMPILER="%HIP_PATH%\lib\llvm\bin\clang++.exe" ^
           -DCMAKE_CROSSCOMPILING=ON ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DAMDGPU_TARGETS="%mapped_target%" ^
@@ -293,7 +293,7 @@ jobs:
       run: |
         $rocmVersion = if ($env:DETECTED_ROCM_VERSION) { $env:DETECTED_ROCM_VERSION } else { $env:ROCM_VERSION }
         $buildBinPath = "llama.cpp\build\bin"
-        $rocmBinPath = "C:\opt\rocm\bin"
+        $rocmBinPath = "%HIP_PATH%\bin"
         
         Write-Host "Copying ROCm core DLL files to build directory..."
         Write-Host "Source: $rocmBinPath"
