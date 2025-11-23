@@ -270,10 +270,10 @@ jobs:
 
         REM Configure the project
         $env:HIP_PATH="C:\Program Files\AMD\ROCm\6.4"
-        $env:CMAKE_PREFIX_PATH="${env:HIP_PATH}"
+        $env:CMAKE_PREFIX_PATH="$env:HIP_PATH"
         cmake .. -G Ninja ^
-          -DCMAKE_C_COMPILER="${env:HIP_PATH}\bin\clang.exe" ^
-          -DCMAKE_CXX_COMPILER="${env:HIP_PATH}\bin\clang++.exe" ^
+          -DCMAKE_C_COMPILER="$env:HIP_PATH\bin\clang.exe" ^
+          -DCMAKE_CXX_COMPILER="$env:HIP_PATH\bin\clang++.exe" ^
           -DCMAKE_CROSSCOMPILING=ON ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DAMDGPU_TARGETS="%mapped_target%" ^
