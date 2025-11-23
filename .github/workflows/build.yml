@@ -265,7 +265,7 @@ jobs:
 
         REM Configure the project
         $env:HIP_PATH="C:\Program Files\AMD\ROCm\6.4\bin"
-        $env:CMAKE_PREFIX_PATH="${env:HIP_PATH}"
+        $env:CMAKE_PREFIX_PATH="C:\Program Files\AMD\ROCm\6.4\bin"
         echo HIP Path detected: $env:HIP_PATH
         cmake .. -G Ninja ^
           -DCMAKE_C_COMPILER="C:\Program Files\AMD\ROCm\6.4\bin\clang.exe" ^
