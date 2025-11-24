@@ -253,6 +253,12 @@ jobs:
         )
         echo Mapped target: %mapped_target%
 
+        REM Set up environment variables and PATH
+        set HIP_PATH="C:\Program Files\AMD\ROCm\6.4\bin"
+        $env:HIP_PATH="C:\Program Files\AMD\ROCm\6.4\bin"
+        set HIP_PLATFORM=amd
+        set PATH=%HIP_PATH%\lib\llvm\bin;%HIP_PATH%\bin;%PATH%
+
         REM Set up x64 Native Tools Command Prompt environment
         call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > vs_path.txt
         set /p VS_PATH=<vs_path.txt
@@ -264,9 +270,6 @@ jobs:
         cd build
 
         REM Configure the project
-        $env:HIP_PATH="C:\Program Files\AMD\ROCm\6.4\bin"
-        $env:CMAKE_PREFIX_PATH="C:\Program Files\AMD\ROCm\6.4\bin"
-        echo HIP Path detected: $env:HIP_PATH
         cmake .. -G Ninja ^
           -DCMAKE_C_COMPILER="C:\Program Files\AMD\ROCm\6.4\bin\clang.exe" ^
           -DCMAKE_CXX_COMPILER="C:\Program Files\AMD\ROCm\6.4\bin\clang++.exe" ^
@@ -284,10 +287,10 @@ jobs:
           -DGGML_STATIC=OFF ^
           -DCMAKE_SYSTEM_NAME=Windows
 
-        Write-Host "Configure finished."
-
         REM Build the project
         cmake --build . -j %NUMBER_OF_PROCESSORS%
+
+       
         
     - name: Copy ROCm core DLLs to build directory
       run: |
