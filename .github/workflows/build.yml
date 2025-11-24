@@ -1,4 +1,4 @@
-name: Build with ROCm release
+name: Build Llama.cpp with rocm release
 on:
   workflow_dispatch:
     inputs:
@@ -24,6 +24,15 @@ on:
         default: true
         type: boolean
 
+  # Trigger on pushes to pull requests
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+  # Trigger on a schedule to build nightly releases
+  schedule:
+    # Runs at 1:00 PM UTC, which is 5:00 AM PST (UTC-8)
+    # This is two hours after the ROCm nightly tarball is triggered
+    - cron: '0 13 * * *'
 
 env:
   OPERATING_SYSTEMS: ${{ github.event.inputs.operating_systems || 'windows' }}
@@ -82,9 +91,9 @@ jobs:
   build-windows:
     runs-on: windows-latest
     needs: prepare-matrix
-    if: needs.prepare-matrix.outputs.should_build_windows == 'true'
     env:
       HIPSDK_INSTALLER_VERSION: "25.Q3"
+    if: needs.prepare-matrix.outputs.should_build_windows == 'true'
     strategy:
       matrix: ${{fromJson(needs.prepare-matrix.outputs.windows_matrix)}}
       fail-fast: false
@@ -160,7 +169,19 @@ jobs:
         perl --version
 
         Write-Host "Manual installation of build dependencies completed"
-            
+
+    - name: Cache ROCm Installation
+      id: cache-rocm
+      uses: actions/cache@v4
+      with:
+        path: C:\Program Files\AMD\ROCm
+        key: rocm-${{ env.HIPSDK_INSTALLER_VERSION }}-${{ runner.os }}
+    - name: ccache
+      uses: ggml-org/ccache-action@v1.2.16
+      with:
+        key: windows-latest-cmake-hip-${{ env.HIPSDK_INSTALLER_VERSION }}-${{ matrix.name }}-x64
+        evict-old-files: 1d
+
     - name: Install ROCm
       if: steps.cache-rocm.outputs.cache-hit != 'true'
       id: depends
@@ -181,7 +202,18 @@ jobs:
             exit 1
         }
         write-host "Completed AMD HIP SDK installation"
-        
+    - name: Verify ROCm
+      id: verify
+      run: |
+        # Find and test ROCm installation
+        $clangPath = Get-ChildItem 'C:\Program Files\AMD\ROCm\*\bin\clang.exe' | Select-Object -First 1
+        if (-not $clangPath) {
+          Write-Error "ROCm installation not found"
+          exit 1
+        }
+        & $clangPath.FullName --version
+        echo "DETECTED_ROCM_VERSION=6.4.2" >> $env:GITHUB_ENV    
+       
     #- name: Install rocWMMA headers (develop)
     #  run: |
     #    $repoUrl = "https://github.com/ROCm/rocWMMA.git"
@@ -205,7 +237,7 @@ jobs:
     #    Copy-Item -Recurse -Force $srcHeaders $destHeaders
     #    
     #    Write-Host "rocWMMA headers (develop) installed successfully."
-        
+
     - name: Clone llama.cpp
       run: |
         $llamacppVersion = "${{ env.LLAMACPP_VERSION }}"
@@ -254,12 +286,9 @@ jobs:
         echo Mapped target: %mapped_target%
 
         REM Set up environment variables and PATH
-        set HIP_PATH="C:\Program Files\AMD\ROCm\6.4\bin"
-        $env:HIP_PATH="C:\Program Files\AMD\ROCm\6.4\bin"
-        set CMAKE_PREFIX_PATH="C:\Program Files\AMD\ROCm\6.4"
-        $env:CMAKE_PREFIX_PATH="C:\Program Files\AMD\ROCm\6.4"
+        set HIP_PATH="C:\Program Files\AMD\ROCm\6.4"
         set HIP_PLATFORM=amd
-        set PATH=%HIP_PATH%\lib\llvm\bin;%HIP_PATH%\bin;%PATH%
+        set PATH=%HIP_PATH%\bin;%PATH%
 
         REM Set up x64 Native Tools Command Prompt environment
         call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > vs_path.txt
@@ -291,14 +320,12 @@ jobs:
 
         REM Build the project
         cmake --build . -j %NUMBER_OF_PROCESSORS%
-
-       
         
     - name: Copy ROCm core DLLs to build directory
       run: |
         $rocmVersion = if ($env:DETECTED_ROCM_VERSION) { $env:DETECTED_ROCM_VERSION } else { $env:ROCM_VERSION }
         $buildBinPath = "llama.cpp\build\bin"
-        $rocmBinPath = "%HIP_PATH%\bin"
+        $rocmBinPath = "C:\opt\rocm\bin"
         
         Write-Host "Copying ROCm core DLL files to build directory..."
         Write-Host "Source: $rocmBinPath"
