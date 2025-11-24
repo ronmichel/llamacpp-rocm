@@ -256,6 +256,8 @@ jobs:
         REM Set up environment variables and PATH
         set HIP_PATH="C:\Program Files\AMD\ROCm\6.4\bin"
         $env:HIP_PATH="C:\Program Files\AMD\ROCm\6.4\bin"
+        set CMAKE_PREFIX_PATH="C:\Program Files\AMD\ROCm\6.4"
+        $env:CMAKE_PREFIX_PATH="C:\Program Files\AMD\ROCm\6.4"
         set HIP_PLATFORM=amd
         set PATH=%HIP_PATH%\lib\llvm\bin;%HIP_PATH%\bin;%PATH%
 
