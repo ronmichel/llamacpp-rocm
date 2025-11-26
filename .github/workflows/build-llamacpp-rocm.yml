@@ -182,6 +182,9 @@ jobs:
         } elseif ($currentTarget -eq "gfx120X") {
           $s3Target = "$currentTarget-all"
           Write-Host "Using S3 target with -all suffix: $s3Target"
+        } elseif ($currentTarget -eq "gfx90X") {
+          $s3Target = "$currentTarget-dcgpu"
+          Write-Host "Using S3 target with -dcgpu suffix: $s3Target"
         }
         
         if ($rocmVersion -eq "latest") {
@@ -308,7 +311,7 @@ jobs:
           set "mapped_target=gfx1151"
         ) else if "%current_target%"=="gfx120X" (
           set "mapped_target=gfx1200;gfx1201"
-        ) else if "%current_target%"=="gfx90X-dcgpu" (
+        ) else if "%current_target%"=="gfx90X" (
           set "mapped_target=gfx906"
         ) else (
           set "mapped_target=%current_target%"
@@ -747,7 +750,7 @@ jobs:
           mapped_target="gfx1151"
         elif [ "$current_target" = "gfx120X" ]; then
           mapped_target="gfx1200;gfx1201"
-        elif [ "$current_target" = "gfx90X-dcgpu" ]; then
+        elif [ "$current_target" = "gfx90X" ]; then
           mapped_target="gfx906"
         else
           mapped_target="$current_target"
