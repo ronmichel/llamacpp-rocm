@@ -745,6 +745,8 @@ jobs:
           mapped_target="gfx1151"
         elif [ "$current_target" = "gfx120X" ]; then
           mapped_target="gfx1200;gfx1201"
+        elif [ "$current_target" = "gfx90X-dcgpu" ]; then
+          mapped_target="gfx906"
         else
           mapped_target="$current_target"
         fi
