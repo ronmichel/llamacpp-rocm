@@ -308,7 +308,7 @@ jobs:
         ) else if "%current_target%"=="gfx120X" (
           set "mapped_target=gfx1200;gfx1201"
         ) else if "%current_target%"=="gfx90X" (
-          set "mapped_target=gfx906;gfx1150"
+          set "mapped_target=gfx906"
         ) else (
           set "mapped_target=%current_target%"
         )
