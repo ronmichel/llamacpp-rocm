@@ -89,7 +89,7 @@ jobs:
     runs-on: windows-latest
     needs: prepare-matrix
     env:
-      HIPSDK_INSTALLER_VERSION: "23.Q4"
+      HIPSDK_INSTALLER_VERSION: "24.Q3"
     if: needs.prepare-matrix.outputs.should_build_windows == 'true'
     strategy:
       matrix: ${{fromJson(needs.prepare-matrix.outputs.windows_matrix)}}
@@ -209,7 +209,7 @@ jobs:
           exit 1
         }
         & $clangPath.FullName --version
-        echo "DETECTED_ROCM_VERSION=5.7.1" >> $env:GITHUB_ENV    
+        echo "DETECTED_ROCM_VERSION=6.1.2" >> $env:GITHUB_ENV    
        
     #- name: Install rocWMMA headers (develop)
     #  run: |
@@ -283,10 +283,10 @@ jobs:
         echo Mapped target: %mapped_target%
 
         REM Set up environment variables and PATH
-        set "HIP_PATH=C:\Program Files\AMD\ROCm\5.7"
+        set "HIP_PATH=C:\Program Files\AMD\ROCm\6.1"
         set HIP_PLATFORM=amd
         set PATH=%HIP_PATH%\bin;%PATH%
-        set "CMAKE_PREFIX_PATH=C:\Program Files\AMD\ROCm\5.7"
+        set "CMAKE_PREFIX_PATH=C:\Program Files\AMD\ROCm\6.1"
 
         REM Set up x64 Native Tools Command Prompt environment
         call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > vs_path.txt
@@ -300,9 +300,9 @@ jobs:
 
         REM Configure the project
         cmake .. -G Ninja ^
-          -DCMAKE_C_COMPILER="C:\Program Files\AMD\ROCm\5.7\bin\clang.exe" ^
-          -DCMAKE_CXX_COMPILER="C:\Program Files\AMD\ROCm\5.7\bin\clang++.exe" ^
-          -DCMAKE_PREFIX_PATH="C:\Program Files\AMD\ROCm\5.7" ^
+          -DCMAKE_C_COMPILER="C:\Program Files\AMD\ROCm\6.1\bin\clang.exe" ^
+          -DCMAKE_CXX_COMPILER="C:\Program Files\AMD\ROCm\6.1\bin\clang++.exe" ^
+          -DCMAKE_PREFIX_PATH="C:\Program Files\AMD\ROCm\6.1" ^
           -DCMAKE_CROSSCOMPILING=ON ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DAMDGPU_TARGETS="%mapped_target%" ^
@@ -324,7 +324,7 @@ jobs:
       run: |
         $rocmVersion = if ($env:DETECTED_ROCM_VERSION) { $env:DETECTED_ROCM_VERSION } else { $env:ROCM_VERSION }
         $buildBinPath = "llama.cpp\build\bin"
-        $rocmBinPath = "C:\Program Files\AMD\ROCm\5.7\bin"
+        $rocmBinPath = "C:\Program Files\AMD\ROCm\6.1\bin"
         
         Write-Host "Copying ROCm core DLL files to build directory..."
         Write-Host "Source: $rocmBinPath"
