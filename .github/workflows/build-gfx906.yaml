@@ -752,6 +752,7 @@ jobs:
 
         # Create build directory
         cd llama.cpp-gfx906
+        rm -f "$(whereis amdgpu-arch | awk '{print $2}')"
         ./SCRIPT_compile_MI50.sh
         
     - name: Copy ROCm core libs to build directory
