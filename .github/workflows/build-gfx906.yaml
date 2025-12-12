@@ -765,7 +765,7 @@ jobs:
             -DLLAMA_BUILD_EXAMPLES=ON \
             -DLLAMA_BUILD_TOOLS=ON \
             -DLLAMA_BUILD_TESTS=OFF \
-            -DLLAMA_CURL=ON \
+            -DLLAMA_CURL=OFF \
             -DLLAMA_STATIC=OFF
 
         make -j$(nproc)
