@@ -849,7 +849,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: llama-ubuntu-rocm-${{ matrix.gfx_target }}-x64
-        path: llama.cpp/build/bin/
+        path: llama.cpp-gfx906/build/bin/
         retention-days: 30
         
     - name: Set job outputs
