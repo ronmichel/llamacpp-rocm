@@ -736,14 +736,22 @@ jobs:
         export HIP_CLANG_PATH=$ROCM_PATH/llvm/bin
         export PATH=$ROCM_PATH/bin:$ROCM_PATH/llvm/bin:$PATH
         export LD_LIBRARY_PATH=$ROCM_PATH/lib:$ROCM_PATH/lib64:$ROCM_PATH/llvm/lib:${LD_LIBRARY_PATH:-}
+        export HIP_INCLUDE_PATH=$ROCM_PATH/include
+        export HIP_LIB_PATH=$ROCM_PATH/lib
+        export HIP_DEVICE_LIB_PATH=$ROCM_PATH/lib/llvm/amdgcn/bitcode
+
+        export LIBRARY_PATH=$ROCM_PATH/lib:$ROCM_PATHlib64:${LIBRARY_PATH:-}
+        export CPATH=$ROCM_PATH/include:${CPATH:-}
+        export PKG_CONFIG_PATH=$ROCM_PATH/lib/pkgconfig:${PKG_CONFIG_PATH:-}
         
         rm -rf build && mkdir -p build && cd build
 
         cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CROSSCOMPILING=ON \
             -DCMAKE_C_COMPILER=$ROCM_PATH/llvm/bin/clang \
             -DCMAKE_CXX_COMPILER=$ROCM_PATH/llvm/bin/clang++ \
-            -DCMAKE_HIP_ARCHITECTURES="native" \
+            -DAMDGPU_TARGETS="$mapped_target" \
             -DCMAKE_C_FLAGS="-O3 -march=native -mtune=native -DNDEBUG" \
             -DCMAKE_CXX_FLAGS="-O3 -march=native -mtune=native -DNDEBUG" \
             -DCMAKE_HIP_FLAGS="-Wno-ignored-attributes -Wno-cuda-compat -Wno-unused-result" \
