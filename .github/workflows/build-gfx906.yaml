@@ -668,29 +668,7 @@ jobs:
         # Stream download directly into tar extraction (no intermediate file)
         curl -sL "$rocm_url" | sudo tar --use-compress-program=gzip -xf - -C /opt/rocm --strip-components=1
         
-    - name: Set ROCm environment variables
-      run: |
-        echo "Setting ROCm environment variables..."
-        
-        # Set environment variables for this step and subsequent steps
-        echo "HIP_PATH=/opt/rocm" >> $GITHUB_ENV
-        echo "ROCM_PATH=/opt/rocm" >> $GITHUB_ENV
-        echo "HIP_PLATFORM=amd" >> $GITHUB_ENV
-        echo "HIP_CLANG_PATH=/opt/rocm/llvm/bin" >> $GITHUB_ENV
-        echo "HIP_INCLUDE_PATH=/opt/rocm/include" >> $GITHUB_ENV
-        echo "HIP_LIB_PATH=/opt/rocm/lib" >> $GITHUB_ENV
-        echo "HIP_DEVICE_LIB_PATH=/opt/rocm/lib/llvm/amdgcn/bitcode" >> $GITHUB_ENV
-        
-        # Update PATH
-        echo "/opt/rocm/bin:/opt/rocm/llvm/bin:$PATH" >> $GITHUB_PATH
-        
-        # Set library paths
-        echo "LD_LIBRARY_PATH=/opt/rocm/lib:/opt/rocm/lib64:/opt/rocm/llvm/lib:${LD_LIBRARY_PATH:-}" >> $GITHUB_ENV
-        echo "LIBRARY_PATH=/opt/rocm/lib:/opt/rocm/lib64:${LIBRARY_PATH:-}" >> $GITHUB_ENV
-        echo "CPATH=/opt/rocm/include:${CPATH:-}" >> $GITHUB_ENV
-        echo "PKG_CONFIG_PATH=/opt/rocm/lib/pkgconfig:${PKG_CONFIG_PATH:-}" >> $GITHUB_ENV
-        
-        echo "ROCm environment variables set successfully"
+
         
     #- name: Install rocWMMA headers (develop)
     #  run: |
@@ -752,8 +730,40 @@ jobs:
 
         # Create build directory
         cd llama.cpp-gfx906
-        rm -f "$(whereis amdgpu-arch | awk '{print $2}')"
-        ./SCRIPT_compile_MI50.sh
+        export ROCM_PATH=${ROCM_PATH:-/opt/rocm}
+        export HIP_PATH=$ROCM_PATH
+        export HIP_PLATFORM=amd
+        export HIP_CLANG_PATH=$ROCM_PATH/llvm/bin
+        export PATH=$ROCM_PATH/bin:$ROCM_PATH/llvm/bin:$PATH
+        export LD_LIBRARY_PATH=$ROCM_PATH/lib:$ROCM_PATH/lib64:$ROCM_PATH/llvm/lib:${LD_LIBRARY_PATH:-}
+        
+        rm -rf build && mkdir -p build && cd build
+
+        cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=$ROCM_PATH/llvm/bin/clang \
+            -DCMAKE_CXX_COMPILER=$ROCM_PATH/llvm/bin/clang++ \
+            -DCMAKE_HIP_ARCHITECTURES="$AMDGPU_ARCH" \
+            -DCMAKE_C_FLAGS="-O3 -march=native -mtune=native -DNDEBUG" \
+            -DCMAKE_CXX_FLAGS="-O3 -march=native -mtune=native -DNDEBUG" \
+            -DCMAKE_HIP_FLAGS="-Wno-ignored-attributes -Wno-cuda-compat -Wno-unused-result" \
+            -DGGML_HIP=ON \
+            -DGGML_HIP_GRAPHS=ON \
+            -DGGML_HIP_NO_HIPBLASLT=ON \
+            -DGGML_NATIVE=ON \
+            -DGGML_CUDA_FA=ON \
+            -DGGML_CUDA_FA_ALL_QUANTS=ON \
+            -DLLAMA_BUILD_SERVER=ON \
+            -DLLAMA_BUILD_EXAMPLES=ON \
+            -DLLAMA_BUILD_TOOLS=ON \
+            -DLLAMA_BUILD_TESTS=OFF \
+            -DLLAMA_CURL=ON \
+            -DLLAMA_STATIC=OFF
+
+        make -j$(nproc)
+
+        echo ""
+        echo "Build complete: ./build/bin/llama-cli, llama-server, llama-bench"
         
     - name: Copy ROCm core libs to build directory
       run: |
