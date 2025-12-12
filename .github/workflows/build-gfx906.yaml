@@ -5,7 +5,7 @@ on:
       operating_systems:
         description: 'Operating systems to build for (comma-separated: windows,ubuntu)'
         required: false
-        default: 'windows'
+        default: 'ubuntu'
       gfx_target:
         description: 'AMD GPU targets (comma-separated)'
         required: false
@@ -743,7 +743,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=$ROCM_PATH/llvm/bin/clang \
             -DCMAKE_CXX_COMPILER=$ROCM_PATH/llvm/bin/clang++ \
-            -DCMAKE_HIP_ARCHITECTURES="$AMDGPU_ARCH" \
+            -DCMAKE_HIP_ARCHITECTURES="native" \
             -DCMAKE_C_FLAGS="-O3 -march=native -mtune=native -DNDEBUG" \
             -DCMAKE_CXX_FLAGS="-O3 -march=native -mtune=native -DNDEBUG" \
             -DCMAKE_HIP_FLAGS="-Wno-ignored-attributes -Wno-cuda-compat -Wno-unused-result" \
