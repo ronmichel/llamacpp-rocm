@@ -840,7 +840,7 @@ jobs:
         
     - name: List build artifacts (including ROCm files)
       run: |
-        cd llama.cpp/build/bin
+        cd llama.cpp-gfx906/build/bin
         echo "Final build artifacts (including ROCm library files):"
         ls -la
         
