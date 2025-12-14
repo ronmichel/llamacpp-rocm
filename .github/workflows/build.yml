@@ -183,22 +183,14 @@ jobs:
       if: steps.cache-rocm.outputs.cache-hit != 'true'
       id: depends
       run: |
+        
         $ErrorActionPreference = "Stop"
         write-host "Downloading AMD HIP SDK Installer"
-        Invoke-WebRequest -Uri "https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-WinSvr2022-For-HIP.exe" -OutFile "${env:RUNNER_TEMP}\rocm-install.exe"
+        Invoke-WebRequest -Uri "https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-23.Q4-WinSvr2022-For-HIP.exe" -OutFile "${env:RUNNER_TEMP}\rocm-install.exe"
         write-host "Installing AMD HIP SDK"
-        $proc = Start-Process "${env:RUNNER_TEMP}\rocm-install.exe" -ArgumentList '-install' -NoNewWindow -PassThru
-        $completed = $proc.WaitForExit(600000)
-        if (-not $completed) {
-            Write-Error "ROCm installation timed out after 10 minutes. Killing the process"
-            $proc.Kill()
-            exit 1
-        }
-        if ($proc.ExitCode -ne 0) {
-            Write-Error "ROCm installation failed with exit code $($proc.ExitCode)"
-            exit 1
-        }
+        Start-Process "${env:RUNNER_TEMP}\rocm-install.exe" -ArgumentList '-install' -NoNewWindow -Wait
         write-host "Completed AMD HIP SDK installation"
+        
     - name: Verify ROCm
       id: verify
       run: |
