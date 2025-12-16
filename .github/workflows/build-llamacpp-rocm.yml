@@ -339,6 +339,7 @@ jobs:
           -DBUILD_SHARED_LIBS=ON ^
           -DLLAMA_BUILD_TESTS=OFF ^
           -DGGML_HIP=ON ^
+          -DGGML_HIP_UMA=1 ^
           -DGGML_OPENMP=OFF ^
           -DGGML_CUDA_FORCE_CUBLAS=OFF ^
           -DGGML_HIP_ROCWMMA_FATTN=OFF ^
