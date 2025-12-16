@@ -526,7 +526,7 @@ jobs:
       run: |
         echo "Installing build dependencies..."
         sudo apt update
-        sudo apt install -y cmake ninja-build unzip curl
+        sudo apt install -y cmake ninja-build unzip curl libcurl4-openssl-dev
         
         # Verify installations
         echo "Verifying installations..."
@@ -543,11 +543,14 @@ jobs:
         # Add appropriate suffixes for different GPU targets
         s3_target="$current_target"
         if [ "$current_target" = "gfx110X" ]; then
-          s3_target="${current_target}-dgpu"
-          echo "Using S3 target with -dgpu suffix: $s3_target"
+          s3_target="${current_target}-all"
+          echo "Using S3 target with -all suffix: $s3_target"
         elif [ "$current_target" = "gfx120X" ]; then
           s3_target="${current_target}-all"
           echo "Using S3 target with -all suffix: $s3_target"
+        elif [ "$current_target" = "gfx90X" ]; then
+          s3_target="${current_target}-dcgpu"
+          echo "Using S3 target with -dcgpu suffix: $s3_target"
         fi
         
         if [ "$rocm_version" = "latest" ]; then
@@ -689,11 +692,13 @@ jobs:
         echo "Input target: $current_target"
         
         if [ "$current_target" = "gfx110X" ]; then
-          mapped_target="gfx1100;gfx1101;gfx1102"
+          mapped_target="gfx1103"
         elif [ "$current_target" = "gfx1151" ]; then
           mapped_target="gfx1151"
         elif [ "$current_target" = "gfx1150" ]; then
           mapped_target="gfx1150"
+        elif [ "$current_target" = "gfx90X" ]; then
+          mapped_target="gfx906"
         elif [ "$current_target" = "gfx120X" ]; then
           mapped_target="gfx1200;gfx1201"
         else
@@ -715,13 +720,14 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DGPU_TARGETS="$mapped_target" \
           -DBUILD_SHARED_LIBS=ON \
+          -DGGML_HIP_NO_HIPBLASLT=ON \
           -DLLAMA_BUILD_TESTS=OFF \
           -DGGML_HIP=ON \
           -DGGML_OPENMP=OFF \
           -DGGML_CUDA_FORCE_CUBLAS=OFF \
           -DGGML_HIP_ROCWMMA_FATTN=ON \
           -DLLAMA_CURL=OFF \
-          -DGGML_NATIVE=OFF \
+          -DGGML_NATIVE=ON \
           -DGGML_STATIC=OFF \
           -DCMAKE_SYSTEM_NAME=Linux
 
