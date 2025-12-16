@@ -304,7 +304,6 @@ jobs:
           -DCMAKE_CXX_COMPILER="C:\opt\rocm\lib\llvm\bin\clang++.exe" ^
           -DCMAKE_CXX_FLAGS="-IC:\opt\rocm\include" ^
           -DCMAKE_CROSSCOMPILING=ON ^
-          -DCMAKE_HIP_COMPILER_FORCED=1 ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DGPU_TARGETS="%mapped_target%" ^
           -DCMAKE_HIP_FLAGS="-Wno-ignored-attributes -Wno-cuda-compat -Wno-unused-result" ^
