@@ -53,6 +53,28 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
+      - name: Clean up existing directories (safety precaution)
+        run: |
+          # Remove existing llama.cpp directory if it exists
+          if (Test-Path "llama.cpp") {
+            Write-Host "Removing existing llama.cpp directory..."
+            Remove-Item -Recurse -Force "llama.cpp"
+          }
+          
+          # Remove existing C:\opt\rocm directory if it exists
+          if (Test-Path "C:\opt\rocm") {
+            Write-Host "Removing existing C:\opt\rocm directory..."
+            Remove-Item -Recurse -Force "C:\opt\rocm"
+          }
+          
+          # Remove any existing ROCm tarball
+          if (Test-Path "rocm.tar.gz") {
+            Write-Host "Removing existing rocm.tar.gz..."
+            Remove-Item -Force "rocm.tar.gz"
+          }
+          
+          Write-Host "Cleanup completed successfully"
+
       - name: Grab rocWMMA package
         id: grab_rocwmma
         run: |
