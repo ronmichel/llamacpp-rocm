@@ -79,6 +79,27 @@ jobs:
           
           Write-Host "Cleanup completed successfully"
 
+      - name: Clone llama.cpp
+        run: |
+          $llamacppVersion = "${{ env.LLAMACPP_VERSION }}"
+          if ($llamacppVersion -eq "latest") {
+            Write-Host "Cloning master branch (latest) with shallow clone"
+            git clone --depth 1 --single-branch --branch master https://github.com/ggerganov/llama.cpp.git
+          } else {
+            Write-Host "Cloning llama.cpp version: $llamacppVersion with shallow clone"
+            git clone --depth 1 --single-branch --branch $llamacppVersion https://github.com/ggerganov/llama.cpp.git
+          }
+          cd llama.cpp
+          
+          # Get commit hash (5 digits) and store it as environment variable
+          $commitHash = git rev-parse --short=5 HEAD
+          echo "LLAMACPP_COMMIT_HASH=$commitHash" >> $env:GITHUB_ENV
+          Write-Host "llama.cpp commit hash (5 digits): $commitHash"
+          
+          # Show current commit info
+          Write-Host "Current llama.cpp commit:"
+          git log --oneline -1
+
       - name: Grab rocWMMA package
         id: grab_rocwmma
         run: |
@@ -131,32 +152,15 @@ jobs:
           }
           & $clangPath.FullName --version
 
-      - name: Clone llama.cpp
-        run: |
-          $llamacppVersion = "${{ env.LLAMACPP_VERSION }}"
-          if ($llamacppVersion -eq "latest") {
-            Write-Host "Cloning master branch (latest) with shallow clone"
-            git clone --depth 1 --single-branch --branch master https://github.com/ggerganov/llama.cpp.git
-          } else {
-            Write-Host "Cloning llama.cpp version: $llamacppVersion with shallow clone"
-            git clone --depth 1 --single-branch --branch $llamacppVersion https://github.com/ggerganov/llama.cpp.git
-          }
-          cd llama.cpp
-          
-          # Get commit hash (5 digits) and store it as environment variable
-          $commitHash = git rev-parse --short=5 HEAD
-          echo "LLAMACPP_COMMIT_HASH=$commitHash" >> $env:GITHUB_ENV
-          Write-Host "llama.cpp commit hash (5 digits): $commitHash"
-          
-          # Show current commit info
-          Write-Host "Current llama.cpp commit:"
-          git log --oneline -1
+
 
       - name: Build
         id: cmake_build
         run: |
           $env:HIP_PATH=$(Resolve-Path 'C:\Program Files\AMD\ROCm\*\bin\clang.exe' | split-path | split-path)
           $env:CMAKE_PREFIX_PATH="${env:HIP_PATH}"
+          cd llama.cpp
+          mkdir build
           cmake -G "Unix Makefiles" -B build -S . `
             -DCMAKE_C_COMPILER="${env:HIP_PATH}\bin\clang.exe" `
             -DCMAKE_CXX_COMPILER="${env:HIP_PATH}\bin\clang++.exe" `
