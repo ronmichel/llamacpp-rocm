@@ -183,17 +183,20 @@ jobs:
           cp "${env:HIP_PATH}\bin\rocblas\library\*" "build\bin\rocblas\library\"
           cp "${env:HIP_PATH}\bin\hipblaslt\library\*" "build\bin\hipblaslt\library\"
 
-      - name: Pack artifacts
-        id: pack_artifacts
+      - name: List build artifacts (including ROCm files)
         run: |
-          7z a -snl llama-bin-win-hip-${{ matrix.name }}-x64.zip .\llama.cpp\build\bin\*
-
-      - name: Upload artifacts
+          cd llama.cpp\build\bin
+          Write-Host "Final build artifacts (including ROCm core files):"
+          Get-ChildItem -Recurse | Format-Table Name, Length, LastWriteTime
+          
+      - name: Upload build artifacts
+        id: upload-artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: llama-bin-win-hip-${{ matrix.name }}-x64.zip
-          name: llama-bin-win-hip-${{ matrix.name }}-x64.zip
-
+          name: llama-windows-rocm-${{ matrix.gfx_target }}-x64
+          path: llama.cpp/build/bin/
+          retention-days: 30
+      
 
   release:
     if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/master' ) || github.event.inputs.create_release == 'true' }}
