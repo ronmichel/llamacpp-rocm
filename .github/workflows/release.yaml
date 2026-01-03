@@ -50,7 +50,7 @@ jobs:
       matrix:
         include:
           - name: "radeon"
-            gpu_targets: "gfx1150"
+            gpu_targets: ${{ env.GFX_TARGETS }}
 
     steps:
       - name: Clone
