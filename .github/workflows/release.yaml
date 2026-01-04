@@ -104,8 +104,8 @@ jobs:
         id: grab_rocwmma
         run: |
           cd llama.cpp
-          curl -o rocwmma.tar "https://github.com/ROCm/rocm-libraries/releases/download/therock-7.10/rocwmma.tar.gz"
-          7z x rocwmma.tar
+          curl -o rocwmma.deb "https://github.com/ROCm/rocm-libraries/releases/download/therock-7.10/rocwmma.tar.gz"
+          7z x rocwmma.deb
 
       - name: Cache ROCm Installation
         id: cache-rocm
