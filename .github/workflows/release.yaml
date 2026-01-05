@@ -171,7 +171,7 @@ jobs:
           cmake -G "Unix Makefiles" -S . -B .\build `
             -DCMAKE_C_COMPILER="${env:HIP_PATH}\bin\clang.exe" `
             -DCMAKE_CXX_COMPILER="${env:HIP_PATH}\bin\clang++.exe" `
-            -DCMAKE_CXX_FLAGS="-I$($PWD.Path.Replace('\', '/'))../rocwmma/library/include/ -Wno-ignored-attributes -Wno-nested-anon-types" `
+            -DCMAKE_CXX_FLAGS="-I$($PWD.Path.Replace('\', '/'))/rocwmma/library/include/ -Wno-ignored-attributes -Wno-nested-anon-types" `
             -DCMAKE_BUILD_TYPE=Release `
             -DGGML_BACKEND_DL=ON `
             -DGGML_NATIVE=OFF `
