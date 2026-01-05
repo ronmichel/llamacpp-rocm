@@ -106,7 +106,8 @@ jobs:
           cd llama.cpp
           curl -k -L -o rocwmma.tgz "https://github.com/ROCm/rocm-libraries/releases/download/therock-7.10/rocwmma.tar.gz"
           7z x rocwmma.tgz
-          cp .\library\include\rocwmma\internal\rocwmma-version.hpp.in rocwmma-version.hpp
+          7z x rocwmma.tar
+          cp .\rocwmma\library\include\rocwmma\internal\rocwmma-version.hpp.in rocwmma-version.hpp
 
       - name: Cache ROCm Installation
         id: cache-rocm
