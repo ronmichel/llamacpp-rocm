@@ -190,7 +190,7 @@ jobs:
 
       - name: List build artifacts (including ROCm files)
         run: |
-          cd llama.cpp\build\bin
+          cd llama.cpp\build\
           Write-Host "Final build artifacts (including ROCm core files):"
           Get-ChildItem -Recurse | Format-Table Name, Length, LastWriteTime
           
@@ -198,8 +198,8 @@ jobs:
         id: upload-artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: llama-windows-rocm-${{ matrix.gfx_target }}-x64
-          path: llama.cpp/build/bin/
+          name: llama-windows-rocm-${{ matrix.gfx_targets }}-x64
+          path: llama.cpp/build/
           retention-days: 30
       
 
