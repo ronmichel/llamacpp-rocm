@@ -107,7 +107,11 @@ jobs:
           curl -k -L -o rocwmma.tgz "https://github.com/ROCm/rocm-libraries/releases/download/therock-7.10/rocwmma.tar.gz"
           7z x rocwmma.tgz
           7z x rocwmma.tar
-          cp .\rocwmma\library\include\rocwmma\internal\rocwmma-version.hpp.in .\rocwmma\library\include\rocwmma\rocwmma-version.hpp
+          curl -o rocwmma.deb "https://repo.radeon.com/rocm/apt/7.0.1/pool/main/r/rocwmma-dev/rocwmma-dev_2.0.0.70001-42~24.04_amd64.deb"
+          7z x rocwmma.deb
+          7z x data.tar
+          cp .\opt\rocm-7.0.1\include\rocwmma\rocwmma-version.hpp .\rocwmma\library\include\rocwmma\rocwmma-version.hpp
+
 
       - name: Cache ROCm Installation
         id: cache-rocm
