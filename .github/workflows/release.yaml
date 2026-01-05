@@ -167,7 +167,9 @@ jobs:
           $env:CMAKE_PREFIX_PATH="${env:HIP_PATH}"
           cd llama.cpp
           mkdir build
-          cmake -G "Unix Makefiles" -B build -S . `
+          cd build
+          
+          cmake .. -G "Unix Makefiles" `
             -DCMAKE_C_COMPILER="${env:HIP_PATH}\bin\clang.exe" `
             -DCMAKE_CXX_COMPILER="${env:HIP_PATH}\bin\clang++.exe" `
             -DCMAKE_CXX_FLAGS="-I$($PWD.Path.Replace('\', '/'))/rocwmma/library/include/ -Wno-ignored-attributes -Wno-nested-anon-types" `
@@ -179,7 +181,9 @@ jobs:
             -DGGML_HIP_ROCWMMA_FATTN=ON `
             -DGGML_HIP=ON `
             -DLLAMA_CURL=OFF
-          cmake --build build --target ggml-hip -j ${env:NUMBER_OF_PROCESSORS}
+          cmake --build . --target ggml-hip -j ${env:NUMBER_OF_PROCESSORS}
+
+          cd ..
           md "build\bin\rocblas\library\"
           md "build\bin\hipblaslt\library"
           cp "${env:HIP_PATH}\bin\hipblas.dll" "build\bin\"
@@ -198,7 +202,7 @@ jobs:
         id: upload-artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: llama-windows-rocm-${{ matrix.gfx_targets }}-x64
+          name: llama-windows-rocm-${{ matrix.gpu_targets }}-x64
           path: llama.cpp/build/
           retention-days: 30
       
