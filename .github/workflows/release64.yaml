@@ -185,7 +185,8 @@ jobs:
   
           write-host "Build the project"
           cmake --build . -j ${env:NUMBER_OF_PROCESSORS}
-        
+
+          cd ..
           md "build\bin\rocblas\library\"
           md "build\bin\hipblaslt\library"
 
