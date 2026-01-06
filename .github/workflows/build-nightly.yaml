@@ -313,7 +313,8 @@ jobs:
           -DGGML_CUDA_FA_ALL_QUANTS=ON ^
           -DGGML_HIP_ROCWMMA_FATTN=ON ^
           -DLLAMA_CURL=OFF ^
-          -DGGML_NATIVE=OFF 
+          -DGGML_NATIVE=OFF ^
+          -DBUILD_SHARED_LIBS=ON
 
         REM Build the project
         cmake --build . -j %NUMBER_OF_PROCESSORS%
