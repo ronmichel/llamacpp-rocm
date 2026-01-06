@@ -170,7 +170,7 @@ jobs:
           mkdir build
           cd build
 
-          REM Configure the project
+          write-host "Configure the project"
           cmake .. -G Ninja ^
             -DCMAKE_C_COMPILER="${env:HIP_PATH}\bin\clang.exe" ^
             -DCMAKE_CXX_COMPILER="${env:HIP_PATH}\bin\clang++.exe" ^
@@ -190,7 +190,7 @@ jobs:
             -DGGML_STATIC=OFF ^
             -DCMAKE_SYSTEM_NAME=Windows
   
-          REM Build the project
+          write-host "Build the project"
           cmake --build . -j %NUMBER_OF_PROCESSORS%
         
 
