@@ -192,8 +192,6 @@ jobs:
           cp "${env:HIP_PATH}\bin\amdhip64_*.dll" "build\bin\" 
           cp "${env:HIP_PATH}\bin\amd_comgr*.dll" "build\bin\" 
           cp "${env:HIP_PATH}\bin\rocsolver.dll" "build\bin\" 
-          cp "${env:HIP_PATH}\bin\libhipblas.dll" "build\bin\" 
-          cp "${env:HIP_PATH}\bin\libhipblaslt.dll" "build\bin\" 
           cp "${env:HIP_PATH}\bin\hipblas.dll" "build\bin\"
           cp "${env:HIP_PATH}\bin\hipblaslt.dll" "build\bin\"
           cp "${env:HIP_PATH}\bin\rocblas.dll" "build\bin\"
