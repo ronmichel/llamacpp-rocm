@@ -184,7 +184,7 @@ jobs:
             -DLLAMA_CURL=OFF
   
           write-host "Build the project"
-          cmake --build . -j %NUMBER_OF_PROCESSORS%
+          cmake --build . -j ${env:NUMBER_OF_PROCESSORS}
         
 
       - name: Copy ROCm core DLLs to build directory
