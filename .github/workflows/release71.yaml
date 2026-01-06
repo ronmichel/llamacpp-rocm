@@ -172,10 +172,8 @@ jobs:
     - name: Extract ROCm to C:\opt\rocm
       run: |
         7z x rocm.whl
-        7z x .\rocm_sdk_devel\_devel.tar
         New-Item -ItemType Directory -Force -Path "C:\opt\rocm"
-        Move-Item -Path ".\_rocm_sdk_devel\*" -Destination "C:\opt\rocm"
-        
+        tar -xzf .\rocm_sdk_devel\_devel.tar -C C:\opt\rocm --strip-components=1
         
     #- name: Install rocWMMA headers (develop)
     #  run: |
