@@ -186,11 +186,14 @@ jobs:
           write-host "Build the project"
           cmake --build . -j ${env:NUMBER_OF_PROCESSORS}
         
-
-      - name: Copy ROCm core DLLs to build directory
-        run: |
           md "build\bin\rocblas\library\"
           md "build\bin\hipblaslt\library"
+
+          cp "${env:HIP_PATH}\bin\amdhip64_*.dll" "build\bin\" 
+          cp "${env:HIP_PATH}\bin\amd_comgr*.dll" "build\bin\" 
+          cp "${env:HIP_PATH}\bin\rocsolver.dll" "build\bin\" 
+          cp "${env:HIP_PATH}\bin\libhipblas.dll" "build\bin\" 
+          cp "${env:HIP_PATH}\bin\libhipblaslt.dll" "build\bin\" 
           cp "${env:HIP_PATH}\bin\hipblas.dll" "build\bin\"
           cp "${env:HIP_PATH}\bin\hipblaslt.dll" "build\bin\"
           cp "${env:HIP_PATH}\bin\rocblas.dll" "build\bin\"
