@@ -162,8 +162,7 @@ jobs:
 
       - name: Build
         id: cmake_build
-        run: |
-        
+        run: |   
           $env:HIP_PATH=$(Resolve-Path 'C:\Program Files\AMD\ROCm\*\bin\clang.exe' | split-path | split-path)
           $env:CMAKE_PREFIX_PATH="${env:HIP_PATH}"
           cd llama.cpp
