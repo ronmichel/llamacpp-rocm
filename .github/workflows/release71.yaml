@@ -173,7 +173,7 @@ jobs:
       run: |
         7z x rocm.whl
         New-Item -ItemType Directory -Force -Path "C:\opt"
-        tar -xzf .\rocm_sdk_devel\_devel.tar -C C:\opt --strip-components=1
+        7z x .\rocm_sdk_devel\_devel.tar -oC:\opt
         Rename-Item -Path "C:\opt\_rocm_sdk_devel" -NewName "rocm"
         
     #- name: Install rocWMMA headers (develop)
