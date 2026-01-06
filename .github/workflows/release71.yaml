@@ -176,6 +176,7 @@ jobs:
         7z x .\rocm_sdk_devel\_devel.tar -oC:\opt
         Rename-Item -Path "C:\opt\_rocm_sdk_devel" -NewName "rocm"
         Get-ChildItem -Path C:/opt/rocm/lib/llvm/bin
+        Get-ChildItem -Path C:/opt/_rocm_sdk_devel/lib/llvm/bin
         
     #- name: Install rocWMMA headers (develop)
     #  run: |
