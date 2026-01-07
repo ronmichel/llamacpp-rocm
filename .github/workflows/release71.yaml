@@ -178,7 +178,7 @@ jobs:
         7z x .\rocm_sdk_devel\_devel.tar -oC:\opt
         7z x rocmcore.whl -oC:\opt
         move "C:\opt\_rocm_sdk_devel" "C:\opt\rocm"
-        move /Y "C:\opt\_rocm_sdk_core" "C:\opt\rocm"
+        robocopy /E "C:\opt\_rocm_sdk_core" "C:\opt\rocm"
         
     #- name: Install rocWMMA headers (develop)
     #  run: |
