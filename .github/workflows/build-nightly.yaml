@@ -306,6 +306,7 @@ jobs:
           -DCMAKE_CROSSCOMPILING=ON ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DCMAKE_HIP_COMPILER_FORCED=1 ^
+          -DGGML_HIP_MMQ_WMMA=ON ^
           -DGPU_TARGETS="%mapped_target%" ^
           -DCMAKE_HIP_ARCHITECTURES="%mapped_target%" ^
           -DCMAKE_HIP_FLAGS="-Wno-ignored-attributes -Wno-cuda-compat -Wno-unused-result" ^
