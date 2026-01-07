@@ -171,15 +171,14 @@ jobs:
         curl -k -L -o rocmcore.whl "https://repo.radeon.com/rocm/windows/rocm-rel-7.1.1/rocm_sdk_core-0.1.dev0-py3-none-win_amd64.whl"
         
     - name: Extract ROCm to C:\opt\rocm
+      shell: cmd
       run: |
         7z x rocm.whl
-        New-Item -ItemType Directory -Force -Path "C:\opt"
+        mkdir "C:\opt"
         7z x .\rocm_sdk_devel\_devel.tar -oC:\opt
         7z x rocmcore.whl -oC:\opt
-        Rename-Item -Path "C:\opt\_rocm_sdk_devel" -NewName "rocm"
-        Get-ChildItem -Path "C:\opt\rocm" -Recurse -Force | Where-Object { $_.LinkType -eq 'SymbolicLink' } | Remove-Item -Force
-        Move-item -Path "C:\opt\_rocm_sdk_core\*" -Destination "C:\opt\rocm" -Force
-        Get-ChildItem -Path C:/opt/rocm/lib/llvm/bin
+        move "C:\opt\_rocm_sdk_devel" "C:\opt\rocm"
+        move /Y "C:\opt\_rocm_sdk_core" "C:\opt\rocm"
         
     #- name: Install rocWMMA headers (develop)
     #  run: |
