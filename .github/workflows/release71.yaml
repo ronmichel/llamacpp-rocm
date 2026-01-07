@@ -121,21 +121,6 @@ jobs:
         
         Write-Host "Cleanup completed successfully"
 
-    - name: Install Visual Studio Build Tools
-      run: |
-        # Download and install Visual Studio Build Tools
-        $vsInstallerUrl = "https://aka.ms/vs/17/release/vs_buildtools.exe"
-        $vsInstallerPath = "$env:TEMP\vs_buildtools.exe"
-        
-        Write-Host "Downloading Visual Studio Build Tools..."
-        Invoke-WebRequest -Uri $vsInstallerUrl -OutFile $vsInstallerPath
-        
-        Write-Host "Installing Visual Studio Build Tools..."
-        Start-Process -FilePath $vsInstallerPath -ArgumentList "--quiet", "--wait", "--norestart", "--add", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "--add", "Microsoft.VisualStudio.Component.VC.CMake.Project", "--add", "Microsoft.VisualStudio.Component.VC.ATL", "--add", "Microsoft.VisualStudio.Component.Windows11SDK.22621" -Wait
-        
-        # Clean up installer
-        Remove-Item $vsInstallerPath -Force
-
     - name: Install build dependencies
       run: |
         Write-Host "Installing build dependencies using manual methods..."
