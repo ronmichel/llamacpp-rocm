@@ -177,6 +177,8 @@ jobs:
         7z x .\rocm_sdk_devel\_devel.tar -oC:\opt
         7z x rocmcore.whl -oC:\opt
         Rename-Item -Path "C:\opt\_rocm_sdk_devel" -NewName "rocm"
+        Get-ChildItem -Path "C:\opt\rocm" -Recurse -Force | Where-Object { $_.LinkType -eq 'SymbolicLink' } | Remove-Item -Force
+        Move-item -Path "C:\opt\_rocm_sdk_core\*" -Destination "C:\opt" -Force
         Get-ChildItem -Path C:/opt/rocm/lib/llvm/bin
         
     #- name: Install rocWMMA headers (develop)
