@@ -295,6 +295,7 @@ jobs:
           -DBUILD_SHARED_LIBS=ON ^
           -DLLAMA_BUILD_TESTS=OFF ^
           -DGGML_HIP=ON ^
+          -DLLAMA_VULKAN=ON ^
           -DGGML_HIP_GRAPHS=ON ^
           -DGGML_HIP_UMA=1 ^
           -DGGML_OPENMP=OFF ^
