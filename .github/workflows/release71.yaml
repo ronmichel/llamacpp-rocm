@@ -174,11 +174,9 @@ jobs:
       shell: cmd
       run: |
         7z x rocm.whl
-        mkdir "C:\opt"
-        7z x .\rocm_sdk_devel\_devel.tar -oC:\opt
-        7z x rocmcore.whl -oC:\opt
-        move "C:\opt\_rocm_sdk_devel" "C:\opt\rocm"
-        robocopy /E "C:\opt\_rocm_sdk_core" "C:\opt\rocm"
+        mkdir "C:\opt\rocm"
+        tar -xzf .\rocm_sdk_devel\_devel.tar -C C:\opt\rocm --strip-components=1
+        tar -xzf .\rocmcore.whl -C C:\opt\rocm --strip-components=1
         
     #- name: Install rocWMMA headers (develop)
     #  run: |
