@@ -634,7 +634,7 @@ jobs:
           -DCMAKE_HIP_COMPILER_FORCED=1 \
           -DCMAKE_BUILD_TYPE=Release \
           -DAMDGPU_TARGETS="$mapped_target" \
-          -DCMAKE_HIP_ARCHITECTURES="%mapped_target%" \
+          -DCMAKE_HIP_ARCHITECTURES="$mapped_target" \
           -DBUILD_SHARED_LIBS=ON \
           -DLLAMA_BUILD_TESTS=OFF \
           -DGGML_HIP=ON \
