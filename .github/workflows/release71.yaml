@@ -519,7 +519,7 @@ jobs:
     - name: Extract ROCm to /opt/rocm
       run: |
         mkdir rocmdev
-        ar x rocm.deb --output ./rocmdev
+        ar x rocmdev.deb --output ./rocmdev
         mkdir rocmcore
         ar x rocmcore.deb --output ./rocmcore
         mkdir rocmlibs
