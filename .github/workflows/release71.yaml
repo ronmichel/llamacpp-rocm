@@ -510,109 +510,25 @@ jobs:
         ninja --version
         echo "Build dependencies installation completed"
             
-    - name: Download and extract ROCm directly to /opt/rocm
+    - name: Download ROCm 7.1.1
       run: |
-        # Determine ROCm version to use
-        rocm_version="${{ env.ROCM_VERSION }}"
-        current_target="${{ matrix.gfx_target }}"
+        curl -k -L -o rocmdev.deb "https://repo.radeon.com/rocm/apt/7.1/pool/main/r/rocm-dev/rocm-dev_7.1.0.70100-20~24.04_amd64.deb"
+        curl -k -L -o rocmcore.deb "https://repo.radeon.com/rocm/apt/7.1/pool/main/r/rocm-core/rocm-core_7.1.0.70100-20~24.04_amd64.deb"
+        curl -k -L -o rocmlibs.deb "https://repo.radeon.com/rocm/apt/7.1/pool/main/r/rocm-device-libs/rocm-device-libs_1.0.0.70100-20~24.04_amd64.deb"
         
-        # Add appropriate suffixes for different GPU targets
-        s3_target="$current_target"
-        if [ "$current_target" = "gfx110X" ]; then
-          s3_target="${current_target}-all"
-          echo "Using S3 target with -dgpu suffix: $s3_target"
-        elif [ "$current_target" = "gfx120X" ]; then
-          s3_target="${current_target}-all"
-          echo "Using S3 target with -all suffix: $s3_target"
-        elif [ "$current_target" = "gfx90X" ]; then
-          s3_target="${current_target}-dcgpu"
-          echo "Using S3 target with -dcgpu suffix: $s3_target"
-        fi
+    - name: Extract ROCm to /opt/rocm
+      run: |
+        mkdir rocmdev
+        ar x rocm.deb --output ./rocmdev
+        mkdir rocmcore
+        ar x rocmcore.deb --output ./rocmcore
+        mkdir rocmlibs
+        ar x rocmlibs.deb --output ./rocmlibs
         
-        if [ "$rocm_version" = "latest" ]; then
-          echo "Auto-detecting latest ROCm version for target: $current_target"
-          s3_response=$(curl -s "https://therock-nightly-tarball.s3.amazonaws.com/?prefix=therock-dist-linux-${s3_target}-7")
-          
-          # Extract all files and parse versions properly
-          files=$(echo "$s3_response" | grep -oP '(?<=<Key>)[^<]*' | grep "therock-dist-linux-${s3_target}-")
-          
-          # Extract versions and sort them properly using semantic versioning
-          latest_file=""
-          latest_major=0
-          latest_minor=0
-          latest_patch=0
-          latest_rc=0
-          latest_is_alpha=false
-          
-          while IFS= read -r file; do
-            if [[ "$file" =~ therock-dist-linux-${s3_target}-.*?([0-9]+\.[0-9]+\.[0-9]+(a|rc)[0-9]+)\.tar\.gz ]]; then
-              version="${BASH_REMATCH[1]}"
-              major=$(echo "$version" | cut -d. -f1)
-              minor=$(echo "$version" | cut -d. -f2)
-              patch=$(echo "$version" | cut -d. -f3 | sed 's/\(a\|rc\).*//')
-              rc=$(echo "$version" | sed 's/.*\(a\|rc\)//')
-              is_alpha=false
-              if [[ "$version" =~ a ]]; then
-                is_alpha=true
-              fi
-              
-              # Compare versions (alpha versions are newer than rc versions)
-              is_newer=false
-              if [ "$major" -gt "$latest_major" ]; then
-                is_newer=true
-              elif [ "$major" -eq "$latest_major" ] && [ "$minor" -gt "$latest_minor" ]; then
-                is_newer=true
-              elif [ "$major" -eq "$latest_major" ] && [ "$minor" -eq "$latest_minor" ] && [ "$patch" -gt "$latest_patch" ]; then
-                is_newer=true
-              elif [ "$major" -eq "$latest_major" ] && [ "$minor" -eq "$latest_minor" ] && [ "$patch" -eq "$latest_patch" ]; then
-                # Same major.minor.patch, compare alpha vs rc
-                if [ "$is_alpha" = true ] && [ "$latest_is_alpha" = false ]; then
-                  is_newer=true
-                elif [ "$is_alpha" = "$latest_is_alpha" ] && [ "$rc" -gt "$latest_rc" ]; then
-                  is_newer=true
-                fi
-              fi
-              
-              if [ "$is_newer" = true ]; then
-                latest_file="$file"
-                latest_major="$major"
-                latest_minor="$minor"
-                latest_patch="$patch"
-                latest_rc="$rc"
-                latest_is_alpha="$is_alpha"
-              fi
-            fi
-          done <<< "$files"
-          
-          echo "Found latest file: $latest_file"
-          
-          # Extract version from the filename for environment variable
-          if [[ "$latest_file" =~ therock-dist-linux-${s3_target}-.*?([0-9]+\.[0-9]+\.[0-9]+(a|rc)[0-9]+)\.tar\.gz ]]; then
-            rocm_version="${BASH_REMATCH[1]}"
-            echo "Detected latest ROCm version: $rocm_version"
-          else
-            echo "Failed to extract ROCm version from latest file: $latest_file"
-            echo "Expected pattern: therock-dist-linux-${s3_target}-*<version>.tar.gz"
-            exit 1
-          fi
-          
-          # Use the exact filename from S3 instead of reconstructing
-          rocm_url="https://therock-nightly-tarball.s3.amazonaws.com/$latest_file"
-        else
-          # For specific versions, construct the URL as before
-          rocm_url="https://therock-nightly-tarball.s3.amazonaws.com/therock-dist-linux-${s3_target}-${rocm_version}.tar.gz"
-        fi
-        
-        # Store the version for use in other steps
-        echo "DETECTED_ROCM_VERSION=$rocm_version" >> $GITHUB_ENV
-        
-        echo "Streaming ROCm from: $rocm_url directly to extraction"
-        
-        # Create directory if it doesn't exist
         sudo mkdir -p /opt/rocm
-        
-        # Stream download directly into tar extraction (no intermediate file)
-        curl -sL "$rocm_url" | sudo tar --use-compress-program=gzip -xf - -C /opt/rocm --strip-components=1
+        tar -xzf ./rocmcore/data.tar.gz -C /opt/rocm --strip-components=3
+        tar -xzf ./rocmdev/data.tar.gz -C /opt/rocm --strip-components=3
+        tar -xzf ./rocmlibs/data.tar.gz -C /opt/rocm --strip-components=3
         
     - name: Set ROCm environment variables
       run: |
