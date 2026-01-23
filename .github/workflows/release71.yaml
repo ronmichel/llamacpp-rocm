@@ -517,6 +517,7 @@ jobs:
         sudo apt update
         sudo apt install -y python3-setuptools python3-wheel
         sudo usermod -a -G render,video $LOGNAME # Add the current user to the render and video groups
+        sudo apt install -y rocm-hip-runtime-devel
         sudo apt install -y rocm-hip-sdk
         
     - name: Set ROCm environment variables
