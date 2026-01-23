@@ -631,6 +631,7 @@ jobs:
         cmake .. -G Ninja \
           -DCMAKE_C_COMPILER=/opt/rocm/llvm/bin/clang \
           -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ \
+          -DCMAKE_CXX_FLAGS="-I/opt/rocm/include" \
           -DCMAKE_CROSSCOMPILING=ON \
           -DCMAKE_HIP_COMPILER_FORCED=1 \
           -DCMAKE_BUILD_TYPE=Release \
