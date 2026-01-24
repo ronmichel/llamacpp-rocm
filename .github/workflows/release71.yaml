@@ -519,6 +519,7 @@ jobs:
         sudo usermod -a -G render,video $LOGNAME # Add the current user to the render and video groups
         sudo apt install -y rocm-hip-runtime-dev
         sudo apt install -y rocm-hip-sdk
+        sudo amdgpu-install -y --usecase=rocm
         
     - name: Set ROCm environment variables
       run: |
