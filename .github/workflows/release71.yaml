@@ -521,31 +521,7 @@ jobs:
         sudo apt install -y rocm
         sudo apt install -y amdgpu-lib
         sudo apt install -y rocm-dev
-        
-    - name: Set ROCm environment variables
-      run: |
-        echo "Setting ROCm environment variables..."
-        
-        # Set environment variables for this step and subsequent steps
-        echo "HIP_PATH=/opt/rocm" >> $GITHUB_ENV
-        echo "ROCM_PATH=/opt/rocm" >> $GITHUB_ENV
-        echo "HIP_PLATFORM=amd" >> $GITHUB_ENV
-        echo "HIP_CLANG_PATH=/opt/rocm/llvm/bin" >> $GITHUB_ENV
-        echo "HIP_INCLUDE_PATH=/opt/rocm/include" >> $GITHUB_ENV
-        echo "HIP_LIB_PATH=/opt/rocm/lib" >> $GITHUB_ENV
-        echo "HIP_DEVICE_LIB_PATH=/opt/rocm/lib/llvm/amdgcn/bitcode" >> $GITHUB_ENV
-        
-        # Update PATH
-        echo "/opt/rocm/bin:/opt/rocm/llvm/bin:$PATH" >> $GITHUB_PATH
-        
-        # Set library paths
-        echo "LD_LIBRARY_PATH=/opt/rocm/lib:/opt/rocm/lib64:/opt/rocm/llvm/lib:${LD_LIBRARY_PATH:-}" >> $GITHUB_ENV
-        echo "LIBRARY_PATH=/opt/rocm/lib:/opt/rocm/lib64:${LIBRARY_PATH:-}" >> $GITHUB_ENV
-        echo "CPATH=/opt/rocm/include:${CPATH:-}" >> $GITHUB_ENV
-        echo "PKG_CONFIG_PATH=/opt/rocm/lib/pkgconfig:${PKG_CONFIG_PATH:-}" >> $GITHUB_ENV
-        
-        echo "ROCm environment variables set successfully"
-        
+      
     #- name: Install rocWMMA headers (develop)
     #  run: |
     #    set -e
@@ -614,21 +590,17 @@ jobs:
         cd llama.cpp
         mkdir build
         cd build
-        
+
         export ROCM_PATH=${ROCM_PATH:-/opt/rocm}
         export HIP_PATH=$ROCM_PATH
         export HIP_PLATFORM=amd
         export HIP_CLANG_PATH=$ROCM_PATH/llvm/bin
         export PATH=$ROCM_PATH/bin:$ROCM_PATH/llvm/bin:$PATH
         export LD_LIBRARY_PATH=$ROCM_PATH/lib:$ROCM_PATH/lib64:$ROCM_PATH/llvm/lib:${LD_LIBRARY_PATH:-}
-        export HIP_INCLUDE_PATH=$ROCM_PATH/include
-        export HIP_LIB_PATH=$ROCM_PATH/lib
-        export HIP_DEVICE_LIB_PATH=$ROCM_PATH/lib/llvm/amdgcn/bitcode
 
-        export LIBRARY_PATH=$ROCM_PATH/lib:$ROCM_PATHlib64:${LIBRARY_PATH:-}
-        export CPATH=$ROCM_PATH/include:${CPATH:-}
-        export PKG_CONFIG_PATH=$ROCM_PATH/lib/pkgconfig:${PKG_CONFIG_PATH:-}
-        
+
+
+
         # Configure the project
         cmake .. -G Ninja \
           -DCMAKE_C_COMPILER=/opt/rocm/llvm/bin/clang \
