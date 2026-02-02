@@ -655,7 +655,7 @@ jobs:
           
 
         # Build the project
-        cmake --build . -j $(nproc) -nocudainc
+        cmake --build . -j $(nproc)
         
     - name: Copy ROCm core libs to build directory
       run: |
