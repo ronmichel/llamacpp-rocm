@@ -307,10 +307,9 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release ^
           -DCMAKE_HIP_COMPILER_FORCED=1 ^
           -DGGML_HIP_MMQ_WMMA=ON ^
-          -DCMAKE_HIP_FLAGS="-mllvm --amdgpu-unroll-threshold-local=600" ^
           -DGPU_TARGETS="%mapped_target%" ^
           -DCMAKE_HIP_ARCHITECTURES="%mapped_target%" ^
-          -DCMAKE_HIP_FLAGS="-Wno-ignored-attributes -Wno-cuda-compat -Wno-unused-result" ^
+          -DCMAKE_HIP_FLAGS="-Wno-ignored-attributes -Wno-cuda-compat -Wno-unused-result -mllvm --amdgpu-unroll-threshold-local=600" ^
           -DBUILD_SHARED_LIBS=ON ^
           -DLLAMA_BUILD_TESTS=OFF ^
           -DGGML_HIP=ON ^
